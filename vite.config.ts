@@ -1,32 +1,37 @@
-// vite.config.js
+// frontend/vite.config.js
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import path from "path";
 
 export default defineConfig({
   plugins: [react()],
-  // ⚠️ إبقه فقط إذا كنت تنشر على GitHub Pages ضمن مسار /my-web-application/
-  esbuild: {
-    jsx: "automatic",
-    jsxImportSource: "react"
+  root: ".",
+  publicDir: "public",
+  resolve: {
+    // إجبار كل الاستيرادات على نفس نسخة React داخل frontend
+    alias: {
+      react: path.resolve(__dirname, "node_modules/react"),
+      "react-dom": path.resolve(__dirname, "node_modules/react-dom"),
+    },
+    // منع التضاعف عبر أي لينك/مسار علوي
+    dedupe: ["react", "react-dom"],
   },
   server: {
     proxy: {
       "/api": "http://localhost:5000",
       "/uploads": "http://localhost:5000",
-      "/health": "http://localhost:5000", // ⬅️ مهم لفحص الصحة من الواجهة
-      "/scan": {
-        target: "http://127.0.0.1:5123",
-        changeOrigin: true,
-        secure: false
-      }
+      "/health": "http://localhost:5000",
+      "/scan": { target: "http://127.0.0.1:5123", changeOrigin: true, secure: false }
     }
   },
   build: {
+    outDir: "dist",
     rollupOptions: {
-      onwarn(warning, def) {
-        if (warning.code === "MODULE_LEVEL_DIRECTIVE" && String(warning.message).includes('"use client"')) return;
-        def(warning);
+      onwarn(w, def) {
+        if (w.code === "MODULE_LEVEL_DIRECTIVE" && String(w.message).includes('"use client"')) return;
+        def(w);
       }
-    }
+    },
+    chunkSizeWarningLimit: 2000
   }
 });

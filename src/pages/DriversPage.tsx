@@ -4,13 +4,11 @@ import {
   Box,
   Button,
   Typography,
-  Stack,
   TextField,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  Snackbar,
   Alert,
   IconButton,
   Table,
@@ -19,8 +17,10 @@ import {
   TableHead,
   TableRow,
   Paper,
-  CircularProgress,
 } from "@mui/material";
+import Stack from "@mui/material/Stack";
+import Snackbar from "@mui/material/Snackbar";
+import CircularProgress from "@mui/material/CircularProgress";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 import PhotoCamera from "@mui/icons-material/PhotoCamera";
@@ -341,7 +341,7 @@ export default function DriversPage() {
         <TextField
           label="بحث عن اسم السائق"
           value={searchName}
-          onChange={(e) => setSearchName(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchName(e.target.value)}
           fullWidth
           sx={{ flex: 3, height: searchHeight, "& .MuiInputBase-root": { height: searchHeight } }}
           inputProps={{ style: { textAlign: "right", direction: "rtl", height: searchHeight - 18 } }}
@@ -658,35 +658,35 @@ export default function DriversPage() {
             <TextField
               label="الاسم"
               value={fields.first}
-              onChange={(e) => setFields((f) => ({ ...f, first: e.target.value }))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFields((f) => ({ ...f, first: e.target.value }))}
               sx={{ flex: 1 }}
               inputProps={{ style: { textAlign: "right", direction: "rtl" } }}
             />
             <TextField
               label="الأب"
               value={fields.father}
-              onChange={(e) => setFields((f) => ({ ...f, father: e.target.value }))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFields((f) => ({ ...f, father: e.target.value }))}
               sx={{ flex: 1 }}
               inputProps={{ style: { textAlign: "right", direction: "rtl" } }}
             />
             <TextField
               label="الجد"
               value={fields.grandfather}
-              onChange={(e) => setFields((f) => ({ ...f, grandfather: e.target.value }))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFields((f) => ({ ...f, grandfather: e.target.value }))}
               sx={{ flex: 1 }}
               inputProps={{ style: { textAlign: "right", direction: "rtl" } }}
             />
             <TextField
               label="الرابع"
               value={fields.fourth}
-              onChange={(e) => setFields((f) => ({ ...f, fourth: e.target.value }))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFields((f) => ({ ...f, fourth: e.target.value }))}
               sx={{ flex: 1 }}
               inputProps={{ style: { textAlign: "right", direction: "rtl" } }}
             />
             <TextField
               label="اللقب"
               value={fields.last}
-              onChange={(e) => setFields((f) => ({ ...f, last: e.target.value }))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFields((f) => ({ ...f, last: e.target.value }))}
               sx={{ flex: 1 }}
               inputProps={{ style: { textAlign: "right", direction: "rtl" } }}
             />
@@ -707,21 +707,21 @@ export default function DriversPage() {
             <TextField
               label="اسم الأم"
               value={fields.motherFirst}
-              onChange={(e) => setFields((f) => ({ ...f, motherFirst: e.target.value }))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFields((f) => ({ ...f, motherFirst: e.target.value }))}
               sx={{ flex: 1 }}
               inputProps={{ style: { textAlign: "right", direction: "rtl" } }}
             />
             <TextField
               label="أب الأم"
               value={fields.motherFather}
-              onChange={(e) => setFields((f) => ({ ...f, motherFather: e.target.value }))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFields((f) => ({ ...f, motherFather: e.target.value }))}
               sx={{ flex: 1 }}
               inputProps={{ style: { textAlign: "right", direction: "rtl" } }}
             />
             <TextField
               label="جد الأم"
               value={fields.motherGrandfather}
-              onChange={(e) => setFields((f) => ({ ...f, motherGrandfather: e.target.value }))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFields((f) => ({ ...f, motherGrandfather: e.target.value }))}
               sx={{ flex: 1 }}
               inputProps={{ style: { textAlign: "right", direction: "rtl" } }}
             />
@@ -732,7 +732,7 @@ export default function DriversPage() {
             label="تاريخ الولادة"
             type="date"
             value={fields.birthDate}
-            onChange={(e) => setFields((f) => ({ ...f, birthDate: e.target.value }))}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFields((f) => ({ ...f, birthDate: e.target.value }))}
             InputLabelProps={{ shrink: true }}
             fullWidth
             sx={{ mb: 2 }}
@@ -745,7 +745,7 @@ export default function DriversPage() {
           <TextField
             label="رقم البطاقة الوطنية"
             value={fields.nationalId}
-            onChange={(e) =>
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setFields((f) => ({ ...f, nationalId: e.target.value.replace(/\D/g, "").slice(0, 12) }))
             }
             inputProps={{ inputMode: "numeric", pattern: "\\d*", maxLength: 12, style: { direction: "ltr", textAlign: "left" } }}
@@ -764,7 +764,7 @@ export default function DriversPage() {
           <TextField
             label="اسم المنطقة والعنوان"
             value={fields.areaAddress}
-            onChange={(e) => setFields((f) => ({ ...f, areaAddress: e.target.value }))}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFields((f) => ({ ...f, areaAddress: e.target.value }))}
             fullWidth
             sx={{ mb: 2 }}
             inputProps={{ style: { textAlign: "right", direction: "rtl" } }}
@@ -774,7 +774,7 @@ export default function DriversPage() {
           <TextField
             label="رقم هاتف السائق"
             value={fields.phone}
-            onChange={(e) => setFields((f) => ({ ...f, phone: e.target.value.replace(/[^0-9]/g, "") }))}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFields((f) => ({ ...f, phone: e.target.value.replace(/[^0-9]/g, "") }))}
             inputProps={{ maxLength: 11, style: { textAlign: "left", direction: "ltr" } }}
             fullWidth
             error={Boolean(fields.phone) && !phoneValid}
@@ -862,7 +862,7 @@ export default function DriversPage() {
             label="تاريخ انتهاء إجازة السوق"
             type="date"
             value={fields.licenseEnd}
-            onChange={(e) => setFields((f) => ({ ...f, licenseEnd: e.target.value }))}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFields((f) => ({ ...f, licenseEnd: e.target.value }))}
             InputLabelProps={{ shrink: true }}
             fullWidth
             sx={{ mb: 2 }}

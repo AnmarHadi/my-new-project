@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Box,
   Paper,
-  Stack,
   Button,
   Typography,
   Alert,
@@ -12,9 +11,10 @@ import {
   TableRow,
   TableCell,
   TableBody,
-  Divider,
   TextField,
 } from "@mui/material";
+import Stack from "@mui/material/Stack";
+import Divider from "@mui/material/Divider";
 import Autocomplete from "@mui/material/Autocomplete";
 import AddIcon from "@mui/icons-material/Add";
 import SaveAltIcon from "@mui/icons-material/SaveAlt";
@@ -191,7 +191,13 @@ export default function TelegramsPage() {
     }));
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(
-      REVERSED_UI ? sheetData.map((o) => Object.fromEntries(Object.entries(o).reverse())) : sheetData
+      REVERSED_UI ? sheetData.map((o) => {
+        const reversedObj: {[key: string]: any} = {};
+        Object.keys(o).reverse().forEach(key => {
+          reversedObj[key] = (o as any)[key];
+        });
+        return reversedObj;
+      }) : sheetData
     );
     XLSX.utils.book_append_sheet(wb, ws, "البرقيات");
     XLSX.writeFile(wb, `البرقيات_${new Date().toISOString().slice(0, 10)}.xlsx`);

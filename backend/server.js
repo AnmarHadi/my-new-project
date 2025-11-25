@@ -1,7 +1,7 @@
 // backend/server.js
 import express from "express";
 import mongoose from "mongoose";
-import cors from "cors";
+import cors from "cors"; // إضافة هذا
 import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
@@ -38,12 +38,13 @@ const __dirname = path.dirname(__filename);
 // ======== App ========
 const app = express();
 
-app.use(
-  cors({
-    origin: true, // جرّب فقط؛ لاحقًا ضع قائمة origins
-    credentials: true,
-  })
-);
+// ✅ إضافة middleware CORS
+app.use(cors({
+  origin: ["http://localhost:5173"], // السماح للموقع المحلي
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type"]
+}));
+
 app.use(express.json({ limit: "10mb" }));
 
 // Static folders for uploads/exports relative to current working dir

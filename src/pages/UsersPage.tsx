@@ -7,8 +7,10 @@ import {
   Paper,
   Table, TableHead, TableRow, TableCell, TableBody,
   Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, IconButton, Alert, MenuItem, Select, FormControl, InputLabel, InputAdornment
+  TextField, IconButton, Alert, MenuItem, Select, FormControl
 } from "@mui/material";
+import InputLabel from "@mui/material/InputLabel";
+import InputAdornment from "@mui/material/InputAdornment";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -167,7 +169,7 @@ export default function UsersPage() {
         <TextField
           label="بحث (الاسم/اسم المستخدم/الهاتف)"
           value={q}
-          onChange={(e) => setQ(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQ(e.target.value)}
           sx={{ minWidth: 280 }}
           InputProps={{
             endAdornment: (
@@ -237,20 +239,20 @@ export default function UsersPage() {
           <TextField
             label="الاسم الكامل"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
             inputProps={{ maxLength: 80 }}
           />
           <TextField
             label="اسم المستخدم"
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)}
             helperText="مسموح أحرف/أرقام/._- بين 3 و 20"
             inputProps={{ maxLength: 20, style: { direction: "ltr", textAlign: "left" } }}
           />
           <TextField
             label="رقم الهاتف"
             value={phone}
-            onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, "").slice(0, 11))}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPhone(e.target.value.replace(/[^0-9]/g, "").slice(0, 11))}
             helperText="يجب أن يبدأ بـ 07 ويتكون من 11 رقمًا"
             inputProps={{ style: { direction: "ltr", textAlign: "left" } }}
           />
@@ -260,7 +262,7 @@ export default function UsersPage() {
               labelId="role-lbl"
               label="الدور"
               value={role}
-              onChange={(e) => setRole(e.target.value as Role)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRole(e.target.value as Role)}
             >
               <MenuItem value="admin">مدير</MenuItem>
               <MenuItem value="editor">محرر</MenuItem>
@@ -273,7 +275,7 @@ export default function UsersPage() {
             label={editId ? "كلمة المرور (اتركها فارغة إن لم تُعدِّل)" : "كلمة المرور"}
             type={showPwd ? "text" : "password"}
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
@@ -288,7 +290,7 @@ export default function UsersPage() {
             label="تأكيد كلمة المرور"
             type={showConfirmPwd ? "text" : "password"}
             value={confirmPwd}
-            onChange={(e) => setConfirmPwd(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmPwd(e.target.value)}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">

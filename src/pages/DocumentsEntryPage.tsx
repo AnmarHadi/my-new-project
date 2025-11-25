@@ -12,7 +12,6 @@ import {
   Button,
   Typography,
   FormControl,
-  InputLabel,
   Select,
   MenuItem,
   TextField,
@@ -21,7 +20,6 @@ import {
   DialogContent,
   DialogActions,
   Alert,
-  Autocomplete,
   Table,
   TableBody,
   TableCell,
@@ -29,13 +27,18 @@ import {
   TableHead,
   Card,
   Paper,
-  Chip,
-  Stack,
   IconButton,
-  InputAdornment,
-  Divider,
 } from "@mui/material";
-import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import InputLabel from "@mui/material/InputLabel";
+import Stack from "@mui/material/Stack";
+import InputAdornment from "@mui/material/InputAdornment";
+import Divider from "@mui/material/Divider";
+import Autocomplete from "@mui/material/Autocomplete";
+import Chip from "@mui/material/Chip";
+import { SelectChangeEvent } from "@mui/material/Select";
+import type { AutocompleteRenderInputParams } from "@mui/material/Autocomplete";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { arSA } from "date-fns/locale";
 import ProvinceDropdown from "../components/ProvinceDropdown";
@@ -102,7 +105,6 @@ const PrintReceipt = forwardRef<HTMLDivElement, { data: PrintDataT | null }>(
 
     const formatDate = (d: Date) =>
       d.toLocaleDateString("ar-EG", {
-        calendar: "gregory",
         day: "2-digit",
         month: "2-digit",
         year: "numeric",
@@ -110,7 +112,6 @@ const PrintReceipt = forwardRef<HTMLDivElement, { data: PrintDataT | null }>(
 
     const formatDateTime = (d: Date) =>
       d.toLocaleString("ar-EG", {
-        calendar: "gregory",
         day: "2-digit",
         month: "2-digit",
         year: "numeric",
@@ -337,7 +338,7 @@ export default function DocumentsEntryPage() {
   const [receiptNumber] = useState(() => {
     const last = Number(localStorage.getItem("lastReceipt") || 0) + 1;
     localStorage.setItem("lastReceipt", String(last));
-    return `A${last.toString().padStart(6, "0")}`;
+    return `A${('000000' + last.toString()).slice(-6)}`;
   });
 
   const printRef = useRef<HTMLDivElement>(null);
@@ -863,7 +864,7 @@ export default function DocumentsEntryPage() {
                       labelId="op-label"
                       value={operationType}
                       label="نوع العملية"
-                      onChange={(e) => setOperationType(e.target.value)}
+                      onChange={(e: SelectChangeEvent<string>) => setOperationType(e.target.value)}
                       MenuProps={{ PaperProps: { sx: { direction: "ltr", textAlign: "left" } } }}
                     >
                       <MenuItem value="تحميل">تحميل</MenuItem>
@@ -911,7 +912,7 @@ export default function DocumentsEntryPage() {
                       fullWidth
                       label="رقم المستند"
                       value={documentNumber}
-                      onChange={(e) => setDocumentNumber(e.target.value.replace(/\D/g, ""))}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDocumentNumber(e.target.value.replace(/\D/g, ""))}
                       inputProps={{
                         inputMode: "numeric",
                         pattern: "[0-9]*",
@@ -929,7 +930,7 @@ export default function DocumentsEntryPage() {
                         labelId="doc-letter-label"
                         value={documentLetter}
                         label="الحرف"
-                        onChange={(e) => setDocumentLetter(e.target.value)}
+                        onChange={(e: SelectChangeEvent<string>) => setDocumentLetter(e.target.value)}
                         MenuProps={{
                           PaperProps: { sx: { minWidth: 100, textAlign: "left", direction: "ltr" } },
                         }}
@@ -950,7 +951,7 @@ export default function DocumentsEntryPage() {
                         labelId="doc-type-label"
                         value={documentType}
                         label="نوع المستند"
-                        onChange={(e) => setDocumentType(e.target.value)}
+                        onChange={(e: SelectChangeEvent<string>) => setDocumentType(e.target.value)}
                         MenuProps={{
                           PaperProps: { sx: { minWidth: 150, textAlign: "left", direction: "ltr" } },
                         }}
@@ -982,10 +983,10 @@ export default function DocumentsEntryPage() {
                   <Box sx={{ minWidth: 220, maxWidth: 260 }}>
                     <Autocomplete
                       options={vehicles}
-                      getOptionLabel={(o) => o.name || ""}
+                      getOptionLabel={(o: OptionT) => o.name || ""}
                       value={vehicles.find((v) => v.id === vehicleId) || null}
-                      onChange={(_, v) => setVehicleId(v?.id || "")}
-                      renderInput={(params) => <TextField {...params} label="رقم المركبة" fullWidth />}
+                      onChange={(_: React.SyntheticEvent, v: OptionT | null) => setVehicleId(v?.id || "")}
+                      renderInput={(params: AutocompleteRenderInputParams) => <TextField {...params} label="رقم المركبة" fullWidth />}
                       sx={{ direction: "ltr" }}
                       componentsProps={{ paper: { sx: { textAlign: "left", direction: "ltr" } } }}
                     />
@@ -994,10 +995,10 @@ export default function DocumentsEntryPage() {
                   <Box sx={{ minWidth: 280, maxWidth: 360 }}>
                     <Autocomplete
                       options={drivers}
-                      getOptionLabel={(o) => o.name || ""}
+                      getOptionLabel={(o: OptionT) => o.name || ""}
                       value={drivers.find((d) => d.id === driverId) || null}
-                      onChange={(_, d) => setDriverId(d?.id || "")}
-                      renderInput={(params) => <TextField {...params} label="اسم السائق" fullWidth />}
+                      onChange={(_: React.SyntheticEvent, d: OptionT | null) => setDriverId(d?.id || "")}
+                      renderInput={(params: AutocompleteRenderInputParams) => <TextField {...params} label="اسم السائق" fullWidth />}
                       sx={{ direction: "ltr" }}
                       componentsProps={{ paper: { sx: { textAlign: "left", direction: "ltr" } } }}
                     />
@@ -1026,10 +1027,10 @@ export default function DocumentsEntryPage() {
                   <Box sx={{ minWidth: 300, maxWidth: 600 }}>
                     <Autocomplete
                       options={locations}
-                      getOptionLabel={(o) => o.name || ""}
+                      getOptionLabel={(o: OptionT) => o.name || ""}
                       value={locations.find((l) => l.id === locationId) || null}
-                      onChange={(_, l) => setLocationId(l?.id || "")}
-                      renderInput={(params) => (
+                      onChange={(_: React.SyntheticEvent, l: OptionT | null) => setLocationId(l?.id || "")}
+                      renderInput={(params: AutocompleteRenderInputParams) => (
                         <TextField
                           {...params}
                           label={
@@ -1066,10 +1067,10 @@ export default function DocumentsEntryPage() {
                   <Box sx={{ minWidth: 230, maxWidth: 300 }}>
                     <Autocomplete
                       options={products}
-                      getOptionLabel={(o) => o.name || ""}
+                      getOptionLabel={(o: OptionT) => o.name || ""}
                       value={products.find((p) => p.id === productId) || null}
-                      onChange={(_, p) => setProductId(p?.id || "")}
-                      renderInput={(params) => <TextField {...params} label="المنتوج" fullWidth />}
+                      onChange={(_: React.SyntheticEvent, p: OptionT | null) => setProductId(p?.id || "")}
+                      renderInput={(params: AutocompleteRenderInputParams) => <TextField {...params} label="المنتوج" fullWidth />}
                       sx={{ direction: "ltr" }}
                       componentsProps={{ paper: { sx: { textAlign: "left", direction: "ltr" } } }}
                     />
@@ -1082,7 +1083,7 @@ export default function DocumentsEntryPage() {
                         labelId="unit-label"
                         value={unit}
                         label="وحدة القياس"
-                        onChange={(e) => setUnit(e.target.value)}
+                        onChange={(e: SelectChangeEvent<string>) => setUnit(e.target.value)}
                         MenuProps={{ PaperProps: { sx: { textAlign: "left", direction: "ltr" } } }}
                       >
                         <MenuItem value="لتر">لتر</MenuItem>
@@ -1096,7 +1097,7 @@ export default function DocumentsEntryPage() {
                       fullWidth
                       label="الكمية"
                       value={quantity}
-                      onChange={(e) => setQuantity(e.target.value.replace(/\D/g, ""))}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQuantity(e.target.value.replace(/\D/g, ""))}
                       inputProps={{ inputMode: "numeric", pattern: "[0-9]*", maxLength: 6 }}
                       sx={{ direction: "ltr" }}
                     />
@@ -1115,7 +1116,7 @@ export default function DocumentsEntryPage() {
                     <TextField
                       label="السلفة (ثلاث مراتب)"
                       value={advance3}
-                      onChange={(e) => {
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                         const raw = e.target.value.replace(/\D/g, "").slice(0, 3);
                         setAdvance3(raw);
                         setAdvance(raw ? Number(raw) * 1000 : 0);
@@ -1354,7 +1355,7 @@ export default function DocumentsEntryPage() {
               label="المبلغ المضاف"
               fullWidth
               value={extraAmountInput}
-              onChange={(e) => setExtraAmountInput(e.target.value.replace(/\D/g, ""))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setExtraAmountInput(e.target.value.replace(/\D/g, ""))}
               inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
               sx={{ mb: 2 }}
             />
@@ -1363,7 +1364,7 @@ export default function DocumentsEntryPage() {
               label="الوصف"
               fullWidth
               value={extraDescInput}
-              onChange={(e) => setExtraDescInput(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setExtraDescInput(e.target.value)}
             />
           </DialogContent>
           <DialogActions>
@@ -1384,7 +1385,7 @@ export default function DocumentsEntryPage() {
               label="قيمة الخصم"
               fullWidth
               value={discountAmountInput}
-              onChange={(e) => setDiscountAmountInput(e.target.value.replace(/\D/g, ""))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDiscountAmountInput(e.target.value.replace(/\D/g, ""))}
               inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
               sx={{ mb: 2 }}
             />
@@ -1393,7 +1394,7 @@ export default function DocumentsEntryPage() {
               label="الوصف"
               fullWidth
               value={discountDescInput}
-              onChange={(e) => setDiscountDescInput(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDiscountDescInput(e.target.value)}
             />
           </DialogContent>
           <DialogActions>

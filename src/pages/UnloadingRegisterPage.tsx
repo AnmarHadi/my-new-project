@@ -1,10 +1,12 @@
 // src/pages/UnloadingRegisterPage.tsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  Box, Paper, Stack, Button, Typography, Alert, TextField,
-  Table, TableHead, TableRow, TableCell, TableBody, Divider,
+  Box, Paper, Button, Typography, Alert, TextField,
+  Table, TableHead, TableRow, TableCell, TableBody,
   IconButton, Dialog, DialogTitle, DialogContent, DialogActions
 } from "@mui/material";
+import Stack from "@mui/material/Stack";
+import Divider from "@mui/material/Divider";
 import SearchIcon from "@mui/icons-material/Search";
 import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
 import SaveIcon from "@mui/icons-material/Save";
@@ -63,7 +65,7 @@ function QRScannerDialog({
         (decodedText) => {
           onScan(decodedText);
           // أوقف الماسح ثم أغلق الحوار
-          stopScanner().finally(onClose);
+          stopScanner().then(() => onClose()).catch(() => onClose());
         },
         () => {}
       );
@@ -284,7 +286,7 @@ export default function UnloadingRegisterPage() {
           <TextField
             label="نص QR الوصل"
             value={qrText}
-            onChange={(e) => setQrText(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQrText(e.target.value)}
             sx={{ minWidth: 240, flex: 1 }}
           />
           <Button variant="outlined" startIcon={<QrCodeScannerIcon />} onClick={() => setCameraOpen(true)} sx={{ height: 48 }}>
@@ -297,11 +299,11 @@ export default function UnloadingRegisterPage() {
           <TextField
             label="رقم المستند"
             value={docNumber}
-            onChange={(e) => setDocNumber(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDocNumber(e.target.value)}
             sx={{ minWidth: 220, flex: 1 }}
           />
-          <TextField label="من تاريخ" type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} InputLabelProps={{ shrink: true }} />
-          <TextField label="إلى تاريخ" type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} InputLabelProps={{ shrink: true }} />
+          <TextField label="من تاريخ" type="date" value={dateFrom} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDateFrom(e.target.value)} InputLabelProps={{ shrink: true }} />
+          <TextField label="إلى تاريخ" type="date" value={dateTo} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDateTo(e.target.value)} InputLabelProps={{ shrink: true }} />
           <Button variant="contained" startIcon={<SearchIcon />} onClick={fetchByFilters} sx={{ height: 48 }}>
             بحث
           </Button>
@@ -370,7 +372,7 @@ export default function UnloadingRegisterPage() {
                       <TextField
                         type="date"
                         value={st.date}
-                        onChange={(e) => setEdit((prev) => ({ ...prev, [r.id]: { ...st, date: e.target.value } }))}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEdit((prev) => ({ ...prev, [r.id]: { ...st, date: e.target.value } }))}
                         size="small"
                         InputLabelProps={{ shrink: true }}
                       />
@@ -378,7 +380,7 @@ export default function UnloadingRegisterPage() {
                     <TableCell align="center">
                       <TextField
                         value={st.qty}
-                        onChange={(e) => {
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                           const val = e.target.value.replace(/[^\d.]/g, "");
                           setEdit((prev) => ({
                             ...prev,

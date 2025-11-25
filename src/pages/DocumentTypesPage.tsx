@@ -174,7 +174,7 @@ export default function DocumentTypesPage() {
           <TextField
             label="نوع المستند"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
             sx={{
               mt: 2,
               mb: 1.5,

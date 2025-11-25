@@ -132,7 +132,7 @@ export default function GeneralBalancePage() {
       ]),
     ];
 
-    const worksheet = XLSX.utils.aoa_to_sheet(wsData);
+    const worksheet = XLSX.utils.json_to_sheet(wsData.map(row => ({ "التفاصيل": row[0], "التاريخ": row[1] })));
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "الرصيد العام");
     XLSX.writeFile(workbook, "الرصيد_العام.xlsx");
@@ -208,7 +208,7 @@ export default function GeneralBalancePage() {
           type="date"
           label="إلى تاريخ"
           value={toDate}
-          onChange={(e) => setToDate(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setToDate(e.target.value)}
           InputLabelProps={{ shrink: true }}
           sx={{
             width: 150,
@@ -224,7 +224,7 @@ export default function GeneralBalancePage() {
           type="date"
           label="من تاريخ"
           value={fromDate}
-          onChange={(e) => setFromDate(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFromDate(e.target.value)}
           InputLabelProps={{ shrink: true }}
           sx={{
             width: 150,
@@ -332,7 +332,7 @@ export default function GeneralBalancePage() {
           <TextField
             label="المبلغ"
             value={amount}
-            onChange={(e) => /^\d*$/.test(e.target.value) && setAmount(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => /^\d*$/.test(e.target.value) && setAmount(e.target.value)}
             sx={{ mb: 2, width: 220, input: { textAlign: "left", direction: "ltr" } }}
             error={!!error}
             helperText={error}
@@ -341,7 +341,7 @@ export default function GeneralBalancePage() {
           <TextField
             label="تفاصيل الحركة"
             value={details}
-            onChange={(e) => setDetails(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDetails(e.target.value)}
             sx={{ width: 220 }}
             inputProps={{ maxLength: 100 }}
           />

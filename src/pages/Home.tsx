@@ -3,7 +3,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import axios from "axios";
 
-const { data } = await axios.get('/health');
+// const { data } = await axios.get('/health');
 
 const Home: React.FC = () => (
   <Box sx={{ p: 3 }}>

@@ -136,7 +136,7 @@ export default function LocationsPage() {
         <TextField
           label="اسم الوجهة أو الموقع"
           value={searchName}
-          onChange={e => setSearchName(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchName(e.target.value)}
           sx={{ flex: 2, minWidth: 230 }}
         />
       </Box>
@@ -251,7 +251,7 @@ export default function LocationsPage() {
           <TextField
             label={nameLabel}
             value={name}
-            onChange={e => setName(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
             sx={{ mt: 1, mb: 1.5, width: 220, input: { textAlign: "left", direction: "ltr" } }}
             error={!!error}
             helperText={error}

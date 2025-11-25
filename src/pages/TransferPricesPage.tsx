@@ -2,9 +2,11 @@
 import { useState, useEffect, useMemo } from "react";
 import {
   Box, Button, Typography, Dialog, DialogTitle, DialogContent, DialogActions,
-  MenuItem, TextField, Select, FormControl, InputLabel, Stack, Alert,
+  MenuItem, TextField, Select, FormControl, Alert,
   Table, TableBody, TableCell, TableHead, TableRow, Paper, IconButton
 } from "@mui/material";
+import Stack from "@mui/material/Stack";
+import InputLabel from "@mui/material/InputLabel";
 import ProvinceDropdown from "../components/ProvinceDropdown";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -406,7 +408,7 @@ export default function TransferPricesPage() {
             labelId="search-location-label"
             value={searchLocationId}
             label="موقع الوجهة"
-            onChange={e => setSearchLocationId(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchLocationId(e.target.value)}
             disabled={!searchProvince}
           >
             {searchLocations.length === 0 && (
@@ -530,7 +532,7 @@ export default function TransferPricesPage() {
                 labelId="operation-type-label"
                 value={form.operationType}
                 label="نوع العملية"
-                onChange={e => handleChange("operationType", e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange("operationType", e.target.value)}
               >
                 {OPERATION_TYPES.map(o => (
                   <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>
@@ -550,11 +552,11 @@ export default function TransferPricesPage() {
                 labelId="location-label"
                 value={form.locationId}
                 label="موقع الوجهة"
-                onChange={e => handleChange("locationId", e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange("locationId", e.target.value)}
                 disabled={!form.province || !form.operationType}
                 displayEmpty
-                renderValue={(selected) => {
-                  const v = (selected as string) || "";
+                renderValue={(selected: string | null) => {
+                  const v = selected || "";
                   const loc = locations.find(l => l.id === v);
                   return loc ? loc.name : "موقع الوجهة";
                 }}
@@ -576,7 +578,7 @@ export default function TransferPricesPage() {
                   labelId="product-label"
                   value={form.productId || ""}
                   label="المنتوج"
-                  onChange={(e) => handleChange("productId", e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange("productId", e.target.value)}
                 >
                   {products.length === 0 && (
                     <MenuItem value="" disabled>لا توجد منتجات</MenuItem>
@@ -594,7 +596,7 @@ export default function TransferPricesPage() {
                 labelId="payment-type-label"
                 value={form.paymentType}
                 label="نوع الدفع"
-                onChange={e => handleChange("paymentType", e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange("paymentType", e.target.value)}
               >
                 {PAYMENT_TYPES.map(t => (
                   <MenuItem key={t.value} value={t.value}>{t.label}</MenuItem>
@@ -607,7 +609,7 @@ export default function TransferPricesPage() {
               label={priceLabel}
               type="text"
               value={form.price}
-              onChange={e => handleChange("price", e.target.value.replace(/[^\d]/g, ""))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange("price", e.target.value.replace(/[^\d]/g, ""))}
               fullWidth
             />
 
@@ -617,7 +619,7 @@ export default function TransferPricesPage() {
                 label="مبلغ السلفة"
                 type="text"
                 value={form.advance}
-                onChange={e => handleChange("advance", e.target.value.replace(/[^\d]/g, ""))}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange("advance", e.target.value.replace(/[^\d]/g, ""))}
                 fullWidth
               />
             )}
@@ -664,28 +666,28 @@ export default function TransferPricesPage() {
               label="أدنى حمولة للسيارة"
               type="text"
               value={najafForm.minLoad}
-              onChange={e => setNajafForm(f => ({ ...f, minLoad: e.target.value.replace(/[^\d]/g, "") }))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNajafForm(f => ({ ...f, minLoad: e.target.value.replace(/[^\d]/g, "") }))}
               fullWidth
             />
             <TextField
               label="أعلى حمولة للسيارة"
               type="text"
               value={najafForm.maxLoad}
-              onChange={e => setNajafForm(f => ({ ...f, maxLoad: e.target.value.replace(/[^\d]/g, "") }))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNajafForm(f => ({ ...f, maxLoad: e.target.value.replace(/[^\d]/g, "") }))}
               fullWidth
             />
             <TextField
               label="سعر النقلة"
               type="text"
               value={najafForm.price}
-              onChange={e => setNajafForm(f => ({ ...f, price: e.target.value.replace(/[^\d]/g, "") }))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNajafForm(f => ({ ...f, price: e.target.value.replace(/[^\d]/g, "") }))}
               fullWidth
             />
             <TextField
               label="السلفة"
               type="text"
               value={najafForm.advance}
-              onChange={e => setNajafForm(f => ({ ...f, advance: e.target.value.replace(/[^\d]/g, "") }))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNajafForm(f => ({ ...f, advance: e.target.value.replace(/[^\d]/g, "") }))}
               fullWidth
             />
             {najafError && <Alert severity="error">{najafError}</Alert>}

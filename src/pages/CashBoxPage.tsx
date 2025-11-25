@@ -1,5 +1,26 @@
 // src/pages/CashBoxPage.tsx
 import { useState, useEffect } from "react";
+
+// تعريف ChangeEvent محلياً
+declare global {
+  interface ChangeEvent<T = Element> {
+    target: EventTarget & T;
+    currentTarget: EventTarget & T;
+    bubbles: boolean;
+    cancelable: boolean;
+    defaultPrevented: boolean;
+    eventPhase: number;
+    isTrusted: boolean;
+    nativeEvent: Event;
+    preventDefault(): void;
+    stopPropagation(): void;
+    persist(): void;
+    isDefaultPrevented(): boolean;
+    isPropagationStopped(): boolean;
+    timeStamp: number;
+    type: string;
+  }
+}
 import {
   Box,
   Button,
@@ -23,6 +44,7 @@ import {
   Card,
   CardContent,
 } from "@mui/material";
+import { SelectChangeEvent } from "@mui/material/Select";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { arSA } from "date-fns/locale";
@@ -37,7 +59,7 @@ type Transaction = {
   id: string;
   amount: number;
   details: string;
-  type: string;
+  type: "add" | "withdraw";
   createdAt: string;
   documentId?: string | null;
 };
@@ -119,7 +141,7 @@ export default function CashBoxPage() {
       return;
     }
     const ws = XLSX.utils.json_to_sheet(
-      filtered.map((t, i) => ({
+      filtered.map((t: Transaction, i: number) => ({
         التسلسل: i + 1,
         المبلغ: t.amount,
         الوصف: t.details,
@@ -130,12 +152,19 @@ export default function CashBoxPage() {
     );
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "القاصة");
-    XLSX.writeFile(wb, "cashbox.xlsx");
+    // استخدم write_file إذا writeFile غير متوفرة
+    if (XLSX.writeFile) {
+      XLSX.writeFile(wb, "cashbox.xlsx");
+    } else if (XLSX.utils.write_file) {
+      XLSX.utils.write_file(wb, "cashbox.xlsx");
+    } else {
+      setActionError("لا يمكن تصدير الملف، مكتبة XLSX غير متوفرة بشكل صحيح");
+    }
   };
 
   const getBalance = () =>
     transactions.reduce(
-      (sum, t) => sum + (t.type === "add" ? t.amount : -t.amount),
+      (sum: number, t: Transaction) => sum + (t.type === "add" ? t.amount : -t.amount),
       0
     );
 
@@ -315,7 +344,7 @@ export default function CashBoxPage() {
                 type="date"
                 label="من تاريخ"
                 value={startDate ? startDate.toISOString().substring(0, 10) : ""}
-                onChange={(e) =>
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setStartDate(e.target.value ? new Date(e.target.value) : null)
                 }
                 InputLabelProps={{ shrink: true }}
@@ -334,7 +363,7 @@ export default function CashBoxPage() {
                 type="date"
                 label="إلى تاريخ"
                 value={endDate ? endDate.toISOString().substring(0, 10) : ""}
-                onChange={(e) =>
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setEndDate(e.target.value ? new Date(e.target.value) : null)
                 }
                 InputLabelProps={{ shrink: true }}
@@ -386,7 +415,7 @@ export default function CashBoxPage() {
               </TableHead>
               <TableBody>
                 {filtered.length > 0 ? (
-                  filtered.map((t, i) => (
+                  filtered.map((t: Transaction, i: number) => (
                     <TableRow key={t.id}>
                       <TableCell align="center">
                         {t.documentId ? (
@@ -455,7 +484,7 @@ export default function CashBoxPage() {
               <TextField
                 label="الوصف"
                 value={details}
-                onChange={(e) => setDetails(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDetails(e.target.value)}
                 inputProps={{ maxLength: 100 }}
                 sx={{ flex: 1 }}
                 fullWidth
@@ -463,7 +492,7 @@ export default function CashBoxPage() {
               <TextField
                 label="المبلغ"
                 value={amount}
-                onChange={(e) =>
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   /^\d*$/.test(e.target.value) && setAmount(e.target.value)
                 }
                 error={!!error}
@@ -475,7 +504,7 @@ export default function CashBoxPage() {
             <FormControl fullWidth sx={{ mb: 2 }}>
               <Select
                 value={type}
-                onChange={(e) => setType(e.target.value as "add" | "withdraw")}
+                onChange={(e: SelectChangeEvent<string>) => setType(e.target.value as "add" | "withdraw")}
               >
                 <MenuItem value="add">إضافة</MenuItem>
                 <MenuItem value="withdraw">سحب</MenuItem>

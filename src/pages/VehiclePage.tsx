@@ -1,23 +1,54 @@
-// src/pages/VehiclesPage.tsx
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import {
-  Box, TextField, Button, Typography, Alert, Stack,
+  Box, TextField, Button, Typography, Alert,
   Table, TableBody, TableCell, TableHead, TableRow, Paper,
-  Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Tooltip
+  Dialog, DialogTitle, DialogContent, DialogActions, IconButton
 } from "@mui/material";
+import Stack from "@mui/material/Stack";
+import Tooltip from "@mui/material/Tooltip";
 import Autocomplete from "@mui/material/Autocomplete";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import axios from "axios";
-import { useMemo } from "react";
 import api from "../api";
+
+type ContractorT = { _id: string; name: string };
+
+type VehicleT = {
+  id: string;
+  number: string;
+  province?: string;
+  contractor?: string;
+  contractorName?: string;
+  wheelType?: string;
+  ownerName?: string;
+  ownerAddress?: string;
+  annualEnd?: string;
+  annualImage?: string;
+  checkupEnd?: string;
+  checkupImage?: string;
+};
+
+type VehicleForm = {
+  id: string;
+  number: string;
+  province: string;
+  contractor: string;
+  contractorName: string;
+  wheelType: string;
+  ownerName: string;
+  ownerAddress: string;
+  annualEnd: string;
+  annualImage: File | string | null;
+  checkupEnd: string;
+  checkupImage: File | string | null;
+};
 
 const provinces = [
   "", "بغداد", "البصرة", "نينوى", "النجف", "كربلاء", "الأنبار",
-  "ذي قار", "ميسان", "كركوك", "بابل", "ديالى", "صلاح الدين", "واسط",
+  "ذي قار", "ميسان", "كركuk", "بابل", "ديالى", "صلاح الدين", "واسط",
   "الديوانية", "المثنى", "اربيل", "دهوك", "السليمانية"
 ];
 
@@ -46,45 +77,14 @@ function getFieldStatus(date?: string, image?: string) {
   return { label: "مكتملة", status: "valid", color: "#e7f7ee", textColor: "#388e3c" };
 }
 
-type ContractorT = { _id: string; name: string };
-
-type VehicleT = {
-  id: string;
-  number: string;
-  province?: string;
-  contractor?: string;
-  contractorName?: string;
-  wheelType?: string;      // نوع العجلة
-  ownerName?: string;      // اسم المالك
-  ownerAddress?: string;   // العنوان
-  annualEnd?: string;
-  annualImage?: string;    // من الخادم: مسار أو URL
-  checkupEnd?: string;
-  checkupImage?: string;   // من الخادم: مسار أو URL
-};
-
-// حالة نموذج الإضافة/التعديل محليًا (تقبل File أو string أو null)
-type VehicleForm = {
-  id: string;
-  number: string;
-  province: string;
-  contractor: string;
-  contractorName: string;
-  wheelType: string;
-  ownerName: string;
-  ownerAddress: string;
-  annualEnd: string;
-  annualImage: File | string | null;
-  checkupEnd: string;
-  checkupImage: File | string | null;
-};
-
-export default function VehiclesPage() {
+function VehiclesPage() {
   const [searchNumber, setSearchNumber] = useState("");
   const [searchProvince, setSearchProvince] = useState("");
   const [searchContractor, setSearchContractor] = useState("");
   const [vehicles, setVehicles] = useState<VehicleT[]>([]);
   const [contractors, setContractors] = useState<ContractorT[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState<"success" | "error" | "info">("success");
   const [searched, setSearched] = useState(false);
@@ -116,25 +116,55 @@ export default function VehiclesPage() {
   const [newVehicle, setNewVehicle] = useState<VehicleForm>({ ...emptyVehicle });
 
   useEffect(() => {
-    api.get("/contractors").then(res => {
-      setContractors(res.data || []);
-    });
+    const fetchContractors = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await api.get("/contractors");
+        if (Array.isArray(res.data)) {
+          setContractors(res.data);
+        } else if (res.data && Array.isArray(res.data.contractors)) {
+          setContractors(res.data.contractors);
+        } else if (res.data && Array.isArray(res.data.data)) {
+          setContractors(res.data.data);
+        } else {
+          setContractors([]);
+          setError("⚠ لا يمكن الاتصال بالخادم. بعض الميزات قد لا تعمل حتى يتوفر السيرفر.");
+        }
+      } catch (error) {
+        setContractors([]);
+        setError("⚠ لا يمكن الاتصال بالخادم. بعض الميزات قد لا تعمل حتى يتوفر السيرفر.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchContractors();
   }, []);
+
+  const findContractor = (id?: string) => {
+    if (!id) return null;
+    const arr = Array.isArray(contractors) ? contractors : [];
+    return arr.find(c => c._id === id) || null;
+  };
 
   const handleSearch = async () => {
     setSearched(true);
+    setLoading(true);
     try {
       let query: string[] = [];
       if (searchNumber) query.push(`number=${encodeURIComponent(searchNumber)}`);
       if (searchProvince) query.push(`province=${encodeURIComponent(searchProvince)}`);
       if (searchContractor) query.push(`contractor=${encodeURIComponent(searchContractor)}`);
       const res = await api.get(`/vehicles?${query.join("&")}`);
-      setVehicles(res.data || []);
+      setVehicles(Array.isArray(res.data) ? res.data : []);
       setMessage("");
+      setError(null);
     } catch {
       setVehicles([]);
-      setMessage("فشل الاتصال بالخادم أو لا يوجد نتائج");
+      setError("⚠ لا يمكن الاتصال بالخادم. لن تظهر بيانات المركبات حتى يتوفر السيرفر.");
       setMessageType("error");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -163,9 +193,9 @@ export default function VehiclesPage() {
       ownerName: vehicle.ownerName || "",
       ownerAddress: vehicle.ownerAddress || "",
       annualEnd: vehicle.annualEnd || "",
-      annualImage: vehicle.annualImage || null,   // قد تكون string (مسار) أو null
+      annualImage: vehicle.annualImage || null,
       checkupEnd: vehicle.checkupEnd || "",
-      checkupImage: vehicle.checkupImage || null, // قد تكون string (مسار) أو null
+      checkupImage: vehicle.checkupImage || null,
     });
     setOpenDialog(true);
   };
@@ -245,8 +275,16 @@ export default function VehiclesPage() {
     }
   };
 
-  const getContractorName = (id?: string) =>
-    contractors.find((c) => c._id === id)?.name || "";
+  const getContractorName = (id?: string) => {
+    if (!id) return "";
+    const arr = Array.isArray(contractors) ? contractors : [];
+    try {
+      const contractor = arr.find((c) => c && c._id === id);
+      return contractor?.name || "";
+    } catch {
+      return "";
+    }
+  };
 
   function getRowColor(
     annual: { date?: string; image?: string },
@@ -266,6 +304,7 @@ export default function VehiclesPage() {
     setPreviewTitle(title);
     setPreviewOpen(true);
   }
+
   function handleClosePreview() {
     setPreviewOpen(false);
     setPreviewUrl("");
@@ -274,7 +313,6 @@ export default function VehiclesPage() {
 
   const provinceOptions = provinces.slice(1);
 
-  // الأعمدة (منطقية)
   const columns: {
     key: string;
     header: string;
@@ -343,27 +381,17 @@ export default function VehiclesPage() {
     { key: "ownerAddress", header: "العنوان", render: (v) => v.ownerAddress || "-" },
   ];
 
-  // للعرض RTL: الإجراءات أول عمود بصريًا، وبقية الأعمدة معكوسة
   const columnsRtl = useMemo(() => {
     const actions = columns.find(c => c.key === "actions")!;
     const withoutActions = columns.filter(c => c.key !== "actions");
     return [actions, ...withoutActions.reverse()];
   }, [columns]);
 
-  // Sticky للإجراءات على اليسار
   const stickyHeadSx = { position: "sticky" as const, left: 0, backgroundColor: "#fff", zIndex: 3, boxShadow: "1px 0 0 #eee inset" };
   const stickyCellSx = { position: "sticky" as const, left: 0, backgroundColor: "#fff", zIndex: 2, boxShadow: "1px 0 0 #eee inset" };
 
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        py: 4,
-        px: { xs: 1, md: 8 },
-        fontFamily: "Cairo, Arial, Tahoma, sans-serif",
-        direction: "rtl",
-      }}
-    >
+    <Box sx={{ minHeight: "100vh", py: 4, px: { xs: 1, md: 8 }, fontFamily: "Cairo, Arial, Tahoma, sans-serif", direction: "rtl" }}>
       <Typography variant="h4" align="center" fontWeight={700} sx={{ mb: 4 }}>
         إدارة المركبات
       </Typography>
@@ -373,124 +401,75 @@ export default function VehiclesPage() {
         </Alert>
       )}
 
-      {/* البحث */}
+      {/* البحث والأزرار تظهر دائماً */}
       <Box sx={{ width: "100%", maxWidth: "100%", mb: 2, mx: "auto" }}>
         <Stack direction="row" gap={2} alignItems="center" justifyContent="center" sx={{ width: "100%" }}>
-          <Button variant="contained" color="primary" sx={{ fontWeight: "bold", height: 56, flex: 1, minWidth: 110 }} fullWidth onClick={handleSearch}>
-            بحث
-          </Button>
-
+          <Button variant="contained" color="primary" sx={{ fontWeight: "bold", height: 56, flex: 1, minWidth: 110 }} fullWidth onClick={handleSearch}>بحث</Button>
           <Autocomplete
-            options={contractors}
+            options={Array.isArray(contractors) ? contractors : []}
             getOptionLabel={opt => opt.name || ""}
-            value={contractors.find(c => c._id === searchContractor) || null}
+            value={findContractor(searchContractor)}
             onChange={(_, newValue) => setSearchContractor(newValue ? newValue._id : "")}
             renderInput={params => (
-              <TextField
-                {...params}
-                label="اسم المتعهد"
-                variant="outlined"
-                fullWidth
-                InputLabelProps={{ shrink: !!searchContractor }}
-                inputProps={{ ...params.inputProps, style: { textAlign: "left", direction: "ltr" } }}
-              />
+              <TextField {...params} label="اسم المتعهد" variant="outlined" fullWidth InputLabelProps={{ shrink: !!searchContractor }} inputProps={{ ...params.inputProps, style: { textAlign: "left", direction: "ltr" } }} />
             )}
             sx={{ minWidth: 180, flex: 1 }}
-            isOptionEqualToValue={(opt, val) => opt._id === val?._id}
+            isOptionEqualToValue={(option, value) => option?._id === value?._id}
             clearOnBlur={false}
             autoHighlight
           />
-
           <Autocomplete
             options={provinceOptions}
             value={searchProvince || null}
             onChange={(_, newValue) => setSearchProvince(newValue || "")}
             renderInput={params => (
-              <TextField
-                {...params}
-                label="المحافظة"
-                variant="outlined"
-                fullWidth
-                InputLabelProps={{ shrink: !!searchProvince }}
-                inputProps={{ ...params.inputProps, style: { textAlign: "left", direction: "ltr" } }}
-              />
+              <TextField {...params} label="المحافظة" variant="outlined" fullWidth InputLabelProps={{ shrink: !!searchProvince }} inputProps={{ ...params.inputProps, style: { textAlign: "left", direction: "ltr" } }} />
             )}
             sx={{ minWidth: 180, flex: 1 }}
             isOptionEqualToValue={(opt, val) => opt === val}
             clearOnBlur={false}
             autoHighlight
           />
-
-          <TextField
-            label="رقم المركبة"
-            value={searchNumber}
-            onChange={e => setSearchNumber(e.target.value)}
-            fullWidth
-            sx={{ flex: 1, minWidth: 110, input: { textAlign: "left", direction: "ltr" } }}
-            inputProps={{ style: { textAlign: "left", direction: "ltr" } }}
-          />
+          <TextField label="رقم المركبة" value={searchNumber} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchNumber(e.target.value)} fullWidth sx={{ flex: 1, minWidth: 110, input: { textAlign: "left", direction: "ltr" } }} inputProps={{ style: { textAlign: "left", direction: "ltr" } }} />
         </Stack>
-
-        <Button
-          variant="outlined"
-          color="secondary"
-          startIcon={<UploadFileIcon />}
-          sx={{ fontWeight: "bold", height: 48, fontSize: 16, width: "100%", mt: 2, mb: 2, maxWidth: "100%" }}
-          component="label"
-          fullWidth
-        >
+        <Button variant="outlined" color="secondary" startIcon={<UploadFileIcon />} sx={{ fontWeight: "bold", height: 48, fontSize: 16, width: "100%", mt: 2, mb: 2, maxWidth: "100%" }} component="label" fullWidth>
           رفع من Excel
           <input type="file" accept=".xlsx,.xls" hidden ref={excelInputRef} onChange={handleExcelUpload} />
         </Button>
-
-        <Button
-          variant="contained"
-          color="success"
-          startIcon={<AddIcon />}
-          sx={{ fontWeight: "bold", height: 48, fontSize: 16, width: "100%", maxWidth: "100%", borderRadius: 2, mb: 2 }}
-          onClick={handleOpenDialog}
-          fullWidth
-        >
+        <Button variant="contained" color="success" startIcon={<AddIcon />} sx={{ fontWeight: "bold", height: 48, fontSize: 16, width: "100%", maxWidth: "100%", borderRadius: 2, mb: 2 }} onClick={handleOpenDialog} fullWidth>
           إضافة مركبة جديدة
         </Button>
       </Box>
 
-      {/* جدول المركبات — الإجراءات أول عمود وثابت */}
-      {searched && (
+      {/* رسالة الخطأ تظهر مع الصفحة دائماً */}
+      {error && (
+        <Alert severity="error" sx={{ my: 3, fontWeight: 700, fontSize: 18, width: "100%" }}>
+          {error}
+        </Alert>
+      )}
+
+      {/* الجدول يظهر فقط إذا لا يوجد خطأ وبحثت */}
+      {!error && searched && (
         <Paper sx={{ mt: 2 }}>
           <Box sx={{ overflowX: "auto", position: "relative" }}>
             <Table sx={{ direction: "rtl", minWidth: 1100 }}>
               <TableHead>
                 <TableRow>
                   {columnsRtl.map(col => (
-                    <TableCell
-                      key={col.key}
-                      align="center"
-                      sx={col.key === "actions" ? stickyHeadSx : undefined}
-                    >
-                      {col.header}
-                    </TableCell>
+                    <TableCell key={col.key} align="center" sx={col.key === "actions" ? stickyHeadSx : undefined}>{col.header}</TableCell>
                   ))}
                 </TableRow>
               </TableHead>
-
               <TableBody>
                 {vehicles.length > 0 ? (
                   [...vehicles].reverse().map((v, idx) => {
                     const annual = { date: v.annualEnd, image: v.annualImage };
                     const checkup = { date: v.checkupEnd, image: v.checkupImage };
                     const rowColor = getRowColor(annual, checkup);
-
                     return (
                       <TableRow key={v.id || idx} sx={{ backgroundColor: rowColor, transition: "background 0.2s" }}>
                         {columnsRtl.map(col => (
-                          <TableCell
-                            key={col.key}
-                            align="center"
-                            sx={col.key === "actions" ? stickyCellSx : undefined}
-                          >
-                            {col.render(v, idx)}
-                          </TableCell>
+                          <TableCell key={col.key} align="center" sx={col.key === "actions" ? stickyCellSx : undefined}>{col.render(v, idx)}</TableCell>
                         ))}
                       </TableRow>
                     );
@@ -527,9 +506,9 @@ export default function VehiclesPage() {
         <DialogContent sx={{ p: 2 }}>
           <Stack spacing={2}>
             <Autocomplete
-              options={contractors}
+              options={Array.isArray(contractors) ? contractors : []}
               getOptionLabel={opt => opt.name || ""}
-              value={contractors.find(c => c._id === newVehicle.contractor) || null}
+              value={findContractor(newVehicle.contractor)}
               onChange={(_, newValue) => setNewVehicle(v => ({ ...v, contractor: newValue ? newValue._id : "" }))}
               renderInput={params => (
                 <TextField
@@ -542,19 +521,17 @@ export default function VehiclesPage() {
                 />
               )}
               sx={{ minWidth: 180 }}
-              isOptionEqualToValue={(opt, val) => opt._id === (val as any)?._id}
+              isOptionEqualToValue={(option, value) => option?._id === value?._id}
               clearOnBlur={false}
               autoHighlight
             />
-
             <TextField
               label="رقم المركبة"
               value={newVehicle.number}
-              onChange={e => setNewVehicle(v => ({ ...v, number: e.target.value }))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewVehicle(v => ({ ...v, number: e.target.value }))}
               fullWidth
               inputProps={{ maxLength: 20, dir: "ltr", style: { textAlign: "left" } }}
             />
-
             <Autocomplete
               options={provinces.slice(1)}
               value={newVehicle.province || null}
@@ -574,33 +551,29 @@ export default function VehiclesPage() {
               clearOnBlur={false}
               autoHighlight
             />
-
             <TextField
               label="نوع العجلة"
               value={newVehicle.wheelType || ""}
-              onChange={e => setNewVehicle(v => ({ ...v, wheelType: e.target.value }))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewVehicle(v => ({ ...v, wheelType: e.target.value }))}
               fullWidth
             />
-
             <TextField
               label="اسم المالك"
               value={newVehicle.ownerName || ""}
-              onChange={e => setNewVehicle(v => ({ ...v, ownerName: e.target.value }))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewVehicle(v => ({ ...v, ownerName: e.target.value }))}
               fullWidth
             />
-
             <TextField
               label="العنوان"
               value={newVehicle.ownerAddress || ""}
-              onChange={e => setNewVehicle(v => ({ ...v, ownerAddress: e.target.value }))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewVehicle(v => ({ ...v, ownerAddress: e.target.value }))}
               fullWidth
             />
-
             <TextField
               label="تاريخ انتهاء السنوية"
               type="date"
               value={newVehicle.annualEnd || ""}
-              onChange={e => setNewVehicle(v => ({ ...v, annualEnd: e.target.value }))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewVehicle(v => ({ ...v, annualEnd: e.target.value }))}
               InputLabelProps={{ shrink: true }}
               fullWidth
               inputProps={{ style: { textAlign: "left" } }}
@@ -611,15 +584,14 @@ export default function VehiclesPage() {
                 type="file"
                 accept="image/*"
                 hidden
-                onChange={e => setNewVehicle(v => ({ ...v, annualImage: e.target.files?.[0] || null }))}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewVehicle(v => ({ ...v, annualImage: e.target.files?.[0] || null }))}
               />
             </Button>
-
             <TextField
               label="تاريخ انتهاء شهادة التكييل"
               type="date"
               value={newVehicle.checkupEnd || ""}
-              onChange={e => setNewVehicle(v => ({ ...v, checkupEnd: e.target.value }))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewVehicle(v => ({ ...v, checkupEnd: e.target.value }))}
               InputLabelProps={{ shrink: true }}
               fullWidth
               inputProps={{ style: { textAlign: "left" } }}
@@ -630,7 +602,7 @@ export default function VehiclesPage() {
                 type="file"
                 accept="image/*"
                 hidden
-                onChange={e => setNewVehicle(v => ({ ...v, checkupImage: e.target.files?.[0] || null }))}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewVehicle(v => ({ ...v, checkupImage: e.target.files?.[0] || null }))}
               />
             </Button>
             <Button variant="outlined" fullWidth sx={{ mt: 1 }} onClick={handleScanCheckupImage}>
@@ -657,3 +629,5 @@ export default function VehiclesPage() {
     </Box>
   );
 }
+
+export default VehiclesPage;

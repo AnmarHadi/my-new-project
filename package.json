@@ -3,12 +3,17 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "engines": { "node": "20.19.0" },
+  "engines": {
+    "node": "20.19.0"
+  },
   "scripts": {
     "dev": "vite",
-    "build": "vite build && copy dist\\index.html dist\\404.html" ,
+    "build": "vite build && copy dist\\index.html dist\\404.html",
     "preview": "vite preview",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "firebase:init": "firebase init",
+    "firebase:deploy": "firebase deploy",
+    "deploy": "npm run build && firebase deploy"
   },
   "dependencies": {
     "@date-io/date-fns": "^3.2.1",
@@ -43,6 +48,6 @@
     "globals": "^16.3.0",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.35.1",
-    "vite": "^7.0.3"
+    "vite": "^7.1.6"
   }
 }
